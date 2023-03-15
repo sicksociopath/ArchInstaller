@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#Determine SWAP size
+swapsize=$(free --giga | grep "Mem" | awk '{print "+"$2"G"}')
+#Get user and system data
+source temp
+if [[ -d /sys/firmware/efi/efivars ]]; then
+	#UEFI partition
+	#Zap disk
+	sgdisk --zap-all "$disk"
+	#New GPT table
+	sgdisk --clear --set-alignment 2048 "$disk"
+	#Create SWAP partition
+	sgdisk --new=1::"$swapsize" --typecode=1:8200 "$disk"
+	partprobe "$disk"
+	#EFI partition
+	sgdisk --new=2::+1024M --typecode=2:ef00 "$disk"
+	partprobe "$disk"
+	#Root
+	sgdisk --new=3::-0 --typecode=3:8300 "$disk"
+	partprobe "$disk"
+	#Format
+	mkswap "$disk"1
+	mkfs.fat -F 32 "$disk"2
+	mkfs.ext4 "$disk"3
+	#Mount
+	swapon "$disk"1
+	mount "$disk"3 /mnt
+	mount --mkdir "$disk"2 /mnt/boot/EFI
+else
+	printf "WIP\n"
+fi

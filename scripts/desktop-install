@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+#Get system and user data
+source temp
+#Install XORG / ALSA
+./scripts/xorg-alsa
+#Create neeeded directories
+mkdir /mnt/home/"$username"/Documents
+mkdir /mnt/home/"$username"/Downloads
+mkdir /mnt/home/"$username"/.desktop
+mkdir /mnt/home/"$username"/Documents/Music
+mkdir /mnt/home/"$username"/Documents/Pictures
+mkdir /mnt/home/"$username"/Documents/Videos
+mkdir /mnt/home/"$username"/.config
+cp config-files/desktop-files/user-dirs.dirs /mnt/home/"$username"/.config/
+#Install desktop
+case $desktop in
+	1)
+		./scripts/qtile-install;;
+	2)
+		./scripts/bspwm-install;;
+	3)
+		./scripts/xfce4-install;;
+esac
+#Install GUI tools and utils
+pacstrap /mnt mpv yt-dlp keepassxc thunderbird mupdf
+#Install web browsers
+pacstrap /mnt firefox vivaldi torbrowser-launcher qutebrowser
+#Install polkit and keyring
+pacstrap /mnt polkit gnome-keyring polkit-gnome seahorse
+#Copy default X Session
+cp -r config-files/desktop-files/default-xsession.desktop /mnt/usr/share/xsessions
+#Copy Wallpapers
+cp -r config-files/Wallpapers /mnt/usr/share/backgrounds
+#Copy mpv config
+cp config-files/desktop-files/mpv.conf /mnt/etc/mpv/
+#Copy gnome-keyring systemd file
+mv /mnt/usr/lib/systemd/user/gnome-keyring-daemon.service /mnt/usr/lib/systemd/user/gnome-keyring-daemon.service.bk
+cp config-files/desktop-files/gnome-keyring-daemon.service /mnt/usr/lib/systemd/user/
+#Copy costum scripts
+cp config-files/desktop-files/{volume,youtube} /mnt/usr/local/bin
+#Fix user's home files and folders
+arch-chroot /mnt chown "$username":"$username" /home/"$username"/
+arch-chroot /mnt chown -R "$username":"$username" /home/"$username"/.
+arch-chroot /mnt chown "$username":"$username" /home/"$username"/.config
+arch-chroot /mnt chown -R "$username":"$username" /home/"$username"/.config

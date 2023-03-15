@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#Configure pacman
+loc=/etc/pacman.conf
+#Enable color
+sed -i '/Color/s/^#//g' $loc
+#Enable parallel downloads
+sed -i '/ParallelDownload/s/^#//g' $loc
+#Enable multilib repo
+temp=$(($(grep -Fn '[multilib]' $loc | awk -F: '{print $1}' )+1))
+sed -i "$(($temp-1)) s/^#//g" $loc
+sed -i "$temp s/^#//g" $loc
+#Update repos
+pacman -Syy
+#Install reflector and others
+pacman -S --noconfirm archlinux-keyring reflector rsync
+#New mirrors
+loc=/etc/pacman.d/mirrorlist
+cp $loc $loc.bk
+reflector --sort rate --protocol https --latest 20 --save $loc
+#Update repos
+pacman -Syy
+#Install needed pkgs
+pacman -S --noconfirm aria2 curl wget jq gptfdisk

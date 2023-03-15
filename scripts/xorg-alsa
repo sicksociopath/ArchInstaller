@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+if lspci | grep "Virtio GPU"; then
+	pacstrap /mnt xorg mesa lib32-mesa mesa-utils vulkan-icd-loader lib32-vulkan-icd-loader vulkan-headers vulkan-validation-layers vulkan-tools xf86-video-qxl alsa-utils alsa-plugins alsa-oss alsa-firmware alsa-ucm-conf alsa-card-profiles alsa-topology-conf pulseaudio pulseaudio-alsa pulseaudio-bluetooth pulseaudio-equalizer libva-utils vdpauinfo ttf-hack ttf-ubuntu-font-family ttf-dejavu
+	mkdir -p /mnt/etc/X11/xorg.conf.d
+	cp -r config-files/xorg-files/{00-keyboard.conf,30-touchpad.conf} /mnt/etc/X11/xorg.conf.d
+elif lspci | grep "HD Graphics"; then
+	mkdir -p /mnt/etc/X11/xorg.conf.d
+	pacstrap /mnt xorg mesa lib32-mesa mesa-utils vulkan-icd-loader lib32-vulkan-icd-loader vulkan-headers vulkan-validation-layers vulkan-tools xf86-video-qxl alsa-utils alsa-plugins alsa-oss alsa-firmware alsa-ucm-conf alsa-card-profiles alsa-topology-conf pulseaudio pulseaudio-alsa pulseaudio-bluetooth pulseaudio-equalizer libva-utils vdpauinfo xf86-video-intel vulkan-intel lib32-vulkan-intel libva-intel-driver lib32-libva-intel-driver libvdpau-va-gl intel-gpu-tools ttf-hack ttf-ubuntu-font-family ttf-dejavu
+	cp -r config-files/xorg-files/{00-keyboard.conf,20-intel.conf,30-touchpad.conf} /mnt/etc/X11/xorg.conf.d
+fi
+#pacstrap /mnt xorg mesa lib32-mesa mesa-utils vulkan-icd-loader lib32-vulkan-icd-loader vulkan-headers vulkan-validation-layers vulkan-tools xf86-video-qxl alsa-utils alsa-plugins alsa-oss alsa-firmware alsa-ucm-conf alsa-card-profiles alsa-topology-conf pulseaudio pulseaudio-alsa pulseaudio-bluetooth pulseaudio-equalizer libva-utils vdpauinfo xf86-video-intel vulkan-intel lib32-vulkan-intel libva-intel-driver lib32-libva-intel-driver libvdpau-va-gl intel-gpu-tools ttf-hack ttf-ubuntu-font-family ttf-dejavu

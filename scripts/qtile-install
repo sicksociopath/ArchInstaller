@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#Get system and user data
+source temp
+#Needed pkgs
+pacstrap /mnt qtile dunst picom lxappearance qt6ct qt6-base gtk4 kvantum nm-connection-editor network-manager-applet feh rofi kitty papirus-icon-theme lightdm lightdm-slick-greeter redshift xfce4-power-manager pavucontrol thunar xarchiver thunar-media-tags-plugin thunar-archive-plugin thunar-volman ffmpegthumbnailer tumbler libgsf udisks2 gvfs gvfs-mtp gvfs-gphoto2 gvfs-afc gvfs-smb webp-pixbuf-loader poppler-glib ffmpegthumbnailer freetype2 totem evince gnome-epub-thumbnailer capitaine-cursors pamixer
+#Copy new user's config files
+loc=/mnt/home/"$username"/
+cp -r config-files/qtile-config/{dunst,kitty,Kvantum,rofi,qtile,.fehbg} "$loc"/.config
+#Copy .xsession
+cp config-files/qtile-config/xsession "$loc"/.xsession
+#Copy Redshift config
+cp config-files/desktop-files/redshift.conf /mnt/etc/
+#Copy GTK theme
+cp -r config-files/qtile-config/gtk/. /mnt/usr/share/themes/
+#Copy LightDM config
+loc=/mnt/etc/lightdm/
+#Make backup
+mv $loc/lightdm.conf $loc/lightdm.conf.bk
+#Move files
+cp config-files/qtile-config/{lightdm.conf,slick-greeter.conf,auto} $loc/
+if lspci | grep "Virtio GPU"; then
+	sed -i '/xrandr/s/^#//' $loc/auto
+fi
+#Copy .desktop file
+cp config-files/desktop-files/qtile.desktop /mnt/usr/share/xsessions
+#qt6ct
+sed -i '$ a QT_QPA_PLATFORMTHEME=qt6ct' /mnt/etc/environment
+#LightDM
+arch-chroot /mnt systemctl enable lightdm.service

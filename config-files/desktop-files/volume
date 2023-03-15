@@ -1,0 +1,31 @@
+#!/bin/sh
+
+#Notification
+send_notification () {
+	vol=$(pamixer --get-volume)
+	dunstify -a "change-volume" -u low -r "9993" -h int:value:"$vol" -i $1 "Volume: "${vol}"%" -t 1000
+}
+
+case $1 in
+	/usr/share/icons/Papirus-Dark/symbolic/status/audio-volume-high-symbolic.svg)
+		#More
+		pamixer -u
+		pamixer -i 2
+		send_notification $1
+		;;
+	/usr/share/icons/Papirus-Dark/symbolic/status/audio-volume-medium-symbolic.svg)
+		#Less
+		pamixer -u
+		pamixer -d 2
+		send_notification $1
+		;;
+	/usr/share/icons/Papirus-Dark/symbolic/status/audio-volume-muted-symbolic.svg)
+		#Mute
+		pamixer -t
+		if [[ $(pamixer --get-mute) == false ]]; then
+			send_notification /usr/share/icons/Papirus-Dark/symbolic/status/audio-volume-high-symbolic.svg
+		else
+			dunstify -i $1 -a "change-volume" -t 1000 -u low -r "9993" "Muted"
+		fi
+		;;
+esac

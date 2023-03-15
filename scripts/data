@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+#Make temp file
+echo '#!/usr/bin/env bash' > temp
+chmod +x temp
+#Get username
+read -p "Insert new user's name: " username
+#Get user's password
+read -p "Insert $username's password: " userpasswd
+#Get root password
+read -p "Insert root's password: " rootpasswd
+#Get new system's name
+read -p "Insert system's name: " hostname
+#Get timezone
+temp=0
+while [[ $temp == 0 ]]; do
+	printf "Timezone selection\nSelect your region\n"
+	ls /usr/share/zoneinfo/
+	read -p "Region: " region
+	if [[ -d /usr/share/zoneinfo/"$region" ]]; then
+		temp=1
+	else
+		printf "Invalid region\nTry again"
+	fi
+done
+temp=0
+while [[ $temp == 0 ]]; do
+	printf "Select your subregion (city)\n"
+	ls /usr/share/zoneinfo/"$region"
+	read -p "Region: " subregion
+	if [[ -e /usr/share/zoneinfo/"$region"/"$subregion" ]]; then
+		temp=1
+	else
+		printf "Invalid subregion\nTry again"
+	fi
+done
+#Get disk
+var=($(lsblk | awk '/disk/ {print "/dev/"$1}'))
+temp=0
+while [[ $temp == 0 ]]; do
+	printf "Choose disk:\n"
+	for ((i=0; i<${#var[@]}; i++)); do
+		printf "$i)${var[$i]}\n"
+	done
+	read -p "Enter selection: " selection
+	if [[ "$selection" =~ [A-Za-Z] ]]; then
+		printf "Invalid input\n"
+	elif ((0<=$selection && $selection<${#var[@]})); then
+		disk=${var[$selection]}
+		printf "Disk selected: $disk\n"
+		temp=1
+	else
+		printf "Invalid input\n"
+	fi
+done
+
+#Get dekstop
+temp=0
+while [[ $temp == 0 ]]; do
+	printf "Selecte desktop:\n1)Qtile\n2)BSPWM\n3)None\n"
+	read -p "Option: " desktop
+	case $desktop in
+		1 | 2 | 3)
+			temp=1;;
+		*)
+			printf "Invalid input\nTry again\n";;
+	esac
+done
+#Export variables
+(echo "username=$username";echo "userpasswd=$userpasswd";echo "rootpasswd=$rootpasswd";echo "hostname=$hostname";echo "region=$region";echo "subregion=$subregion"; echo "desktop=$desktop"; echo "disk=$disk") >> temp

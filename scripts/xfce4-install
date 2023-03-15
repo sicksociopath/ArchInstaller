@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#Get system and user data
+source temp
+#Needed pkgs
+pacstrap /mnt picom qt6ct qt6-base gtk4 kvantum kitty papirus-icon-theme lightdm lightdm-slick-greeter redshift xfce4-power-manager pavucontrol thunar xarchiver thunar-media-tags-plugin thunar-archive-plugin thunar-volman ffmpegthumbnailer tumbler libgsf udisks2 gvfs gvfs-mtp gvfs-gphoto2 gvfs-afc gvfs-smb webp-pixbuf-loader poppler-glib ffmpegthumbnailer freetype2 totem evince gnome-epub-thumbnailer capitaine-cursors exo garcon xfce4-appfinder xfce4-panel xfce4-session xfce4-settings xfconf xfdesktop xfwm-4 xfwm4-themes ristretto xfce4-battery-plugin xfce4-clipman-plugin xfce4-notifyd xfce4-pulseaudio-plugin xfce4-wavelan-plugin xfce4-whiskermenu-plugin
+#Copy new user's config files
+loc=/mnt/home/"$username"/
+cp -r config-files/xfce4-config/{kitty,Kvantum,gtk-3.0} "$loc"/.config
+#Copy .xsession
+cp config-files/xfce4-config/xsession "$loc"/.xsession
+#Copy Redshift config
+cp config-files/desktop-files/redshift.conf /mnt/etc/
+#Copy GTK theme
+cp -r config-files/xfce4-config/gtk/. /mnt/usr/share/themes/
+#Copy LightDM config
+loc=/mnt/etc/lightdm/
+#Make backup
+mv $loc/lightdm.conf $loc/lightdm.conf.bk
+#Move files
+cp config-files/xfce4-config/{lightdm.conf,slick-greeter.conf,auto} $loc/
+if lspci | grep "Virtio GPU"; then
+	sed -i '/xrandr/s/^#//' $loc/auto
+fi
+#Copy .desktop file
+cp config-files/desktop-files/xfce4.desktop /mnt/usr/share/xsessions

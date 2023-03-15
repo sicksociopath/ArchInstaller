@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#Essetial
+pacstrap /mnt base base-devel linux linux-firmware linux-headers dkms
+#Text Editors
+pacstrap /mnt neovim micro
+#Internet Utilities
+pacstrap /mnt curl jq aria2 wget networkmanager git
+#File System
+pacstrap /mnt efitools unrar xz gptfdisk e2fsprogs dosfstools exfat-utils exfatprogs ntfs-3g unzip zip
+#Pkgs manager
+pacstrap /mnt pacman-contrib rsync reflector texinfo man-pages man-db pkgfile
+#Shell
+pacstrap /mnt zsh zsh-autosuggestions zsh-completions zsh-syntax-highlighting zsh-doc
+#Tools
+pacstrap /mnt which dialog android-tools
+#Microcode
+if lscpu | grep "GenuineIntel"; then
+	pacstrap /mnt intel-ucode
+elif lscpu | grep "AuthenticAMD"; then
+	pacstrap /mnt amd-ucode
+fi

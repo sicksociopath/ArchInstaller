@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#Get System and User data
+./scripts/data
+#Configure Archlive
+./scripts/archlive-config
+#Installation Disk Partitioning
+./scripts/disk-partition
+#Base pkgs installation
+./scripts/base
+#Gen fstab
+genfstab -U /mnt >> /mnt/etc/fstab
+#Configure new system
+./scripts/sys-config
+#Desktop installation
+source temp
+case $desktop in
+	1 | 2 | 3)
+		./scripts/desktop-install;;
+	*)
+		printf "No desktop selected\n";;
+esac
+#Remove temp files
+rm -rf temp

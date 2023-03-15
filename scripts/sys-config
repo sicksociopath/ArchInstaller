@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+#Get user and system data
+source temp
+#Configure new system
+#Timezone
+arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$region"/"$subregion" /etc/localtime
+arch-chroot /mnt hwclock --systohc
+#Timesync servers
+arch-chroot /mnt systemctl enable systemd-timesyncd.service
+#Localization
+sed -i '/en_US.UTF-8 UTF-8/s/^#//g' /mnt/etc/locale.gen
+arch-chroot /mnt locale-gen
+#LANG
+echo 'LANG=en_US.UTF-8' > /mnt/etc/locale.conf
+#Console
+echo 'KEYMAP=la-latin1' > /mnt/etc/vconsole.conf
+#Hostname
+echo "$hostname" > /mnt/etc/hostname
+#NetworkManager
+arch-chroot /mnt systemctl enable NetworkManager.service
+#Pacman config
+#Enable color
+loc=/mnt/etc/pacman.conf
+sed -i '/Color/s/^#//g' $loc
+#Enable parallel downloads
+sed -i '/ParallelDownload/s/^#//g' $loc
+#Enable multilib repo
+temp=$(($(grep -Fn '[multilib]' $loc | awk -F: '{print $1}' )+1))
+sed -i "$(($temp-1)) s/^#//g" $loc
+sed -i "$temp s/^#//g" $loc
+#New mirrors
+loc=/mnt/etc/pacman.d/mirrorlist
+cp $loc $loc.bk
+reflector --sort rate --protocol https --latest 20 --save $loc
+#Bootloader
+pacstrap /mnt grub efibootmgr os-prober
+arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/EFI --bootloader-id=GRUB
+arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+#New user
+arch-chroot /mnt useradd -mU -s /usr/bin/zsh -G sys,log,network,floppy,scanner,power,rfkill,users,video,storage,optical,lp,audio,wheel,adm "$username"
+#ZSH config
+#Root
+cp config-files/zshrc-root /mnt/root/.zshrc
+arch-chroot /mnt chsh -s /usr/bin/zsh
+#New user
+rm -rf /mnt/home/"$username"/.bash*
+cp config-files/zshrc /mnt/home/"$username"/.zshrc
+mkdir -p /mnt/home/"$username"/.cache/zsh
+arch-chroot /mnt chown "$username":"$username" /home/"$username"/.zshrc
+arch-chroot /mnt chown "$username":"$username" /home/"$username"/.cache
+arch-chroot /mnt chown -R "$username":"$username" /home/"$username"/.cache/.
+arch-chroot /mnt chown "$username":"$username" /home/"$username"/.cache/zsh
+arch-chroot /mnt chown -R "$username":"$username" /home/"$username"/.cache/zsh/.
+#New user's passwd
+arch-chroot /mnt chpasswd <<< "$username":"$userpasswd"
+#Root's passwd
+arch-chroot /mnt chpasswd <<< root:"$rootpasswd"

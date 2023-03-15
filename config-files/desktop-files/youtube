@@ -1,0 +1,2 @@
+#!/bin/sh
+mpv --ytdl-format="bestvideo[vcodec^=avc1]+bestaudio" --no-terminal --x11-name='youtube-video' $1
